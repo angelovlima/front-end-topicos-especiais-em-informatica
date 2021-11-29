@@ -23,7 +23,7 @@ axios.interceptors.response.use(res => {
         throw error
 })
 
-axios.defaults.baseURL = 'localhost:8080/'
+axios.defaults.baseURL = 'localhost:8081/'
 
 createApp(App).use(store).use(router).mount('#app')
 
