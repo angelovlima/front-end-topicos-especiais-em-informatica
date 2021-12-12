@@ -3,12 +3,17 @@ import { LoginContext } from '../../context/LoginContext';
 
 function Eventos(props){
 
-    const { isLogado,loginFeito, changeAdmin } = useContext(LoginContext)
+    const { isLogado, token } = useContext(LoginContext)
 
     const getEvents = async () => {
-        const response = await fetch("http://localhost:8084/eventos/buscarTodos");
+        console.log(token)
+        const response = await fetch("http://localhost:8084/eventos/buscarTodos", {
+            headers: new Headers({
+                "Authorization": token
+            })
+        });
+        console.log(response)
         const body = await response.json();
-        if (response.status !== 200) throw Error(body.message);
     
         return body;
     }

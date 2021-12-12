@@ -1,25 +1,28 @@
 import axios from 'axios';
-import React, { useState, useEffect, useContext  } from 'react';
-import ComboSelect from 'react-combo-select';
+import React, { useState, useEffect, useContext } from 'react';
 import Select from 'react-select'
 import { LoginContext } from '../../context/LoginContext';
 
 
-function EventCreator(props){
+function EventCreator(props) {
 
-    const { isLogado,loginFeito, changeAdmin } = useContext(LoginContext)
+    const { isLogado, loginFeito, changeAdmin, token } = useContext(LoginContext)
 
     const getCategorias = async () => {
-        const response = await fetch("http://localhost:8084/categorias/buscarTodos")
+        const response = await fetch("http://localhost:8084/categorias/buscarTodos", {
+            headers: new Headers({
+                'Authorization': token
+            })
+        })
         const body = await response.json()
         if (response.status !== 200) throw Error(body.message);
-        
+
         return body;
     }
 
     const [categorias, setCategorias] = useState([])
 
-    useEffect(async () =>{
+    useEffect(async () => {
         const categ = await getCategorias()
         setCategorias(categ)
     }, [])
@@ -27,12 +30,12 @@ function EventCreator(props){
     const [state, setState] = useState({
         nome: "",
         descricao: "",
-        autor:"",
-        endereco:"",
+        autor: "",
+        endereco: "",
         categoria: "",
         ativo: false
     })
-    
+
     const handleChange = (e) => {
         const { id, value } = e.target
         setState(prevState => ({
@@ -40,24 +43,39 @@ function EventCreator(props){
             [id]: value
         }))
     }
+
+    const handleAtivo = (e) => {
+        setState(prevState => ({
+            ...prevState,
+            ["ativo"]: e.target.checked
+        }))
+    }
+
+    const handleSelect = (e) => {
+        setState(prevState => ({
+            ...prevState,
+            ["categoria"]: e
+        }))
+    }
+
     const handleSubmitClick = (e) => {
         e.preventDefault();
         sendDetailsToServer()
     }
 
     const sendDetailsToServer = async () => {
-        if (state.password.length) {
-            const payload = {
-                "nome": state.nome,
-                "descricao": state.descricao,
-                "autor": state.autor,
-                "endereco": state.endereco,
-                "categoria": state.categoria,
-                "ativo": state.ativo,
-            }
 
-            try{
-                await axios.post('http://localhost:8084/usuarios/auth', payload)
+        const payload = {
+            "nome": state.nome,
+            "descricao": state.descricao,
+            "autor": state.autor,
+            "endereco": state.endereco,
+            "categorias": state.categoria,
+            "ativo": state.ativo,
+        }
+        debugger
+        try {
+            await axios.post('http://localhost:8084/eventos/cadastrar', payload, { headers: { "Authorization": token } })
                 .then(function (response) {
                     if (response.status === 200) {
                         setState(prevState => ({
@@ -70,21 +88,18 @@ function EventCreator(props){
                         alert("Algo de errado aconteceu.");
                     }
                 })
-                .catch(error =>{
+                .catch(error => {
                     console.error('There was an error!', error)
                 })
-            } catch(e){
-                console.log('error', e)
-            }
-            
-        } else {
-            alert('Por favor insira um nome ou senha válidos.')
+        } catch (e) {
+            console.log('error', e)
         }
+
+
 
     }
 
-    if(isLogado){
-        console.log(loginFeito)
+    if (isLogado) {
         return (
             <div className="login-card">
                 <form>
@@ -126,11 +141,11 @@ function EventCreator(props){
                     </div>
                     <div className="form-group text-left">
                         <label htmlFor="selectCombo">Categoria</label>
-                        <Select 
+                        <Select
                             name="categorias"
                             options={categorias}
-                            value={state.categoria}
-                            onChange={handleChange}
+                            isMulti
+                            onChange={handleSelect}
                             getOptionLabel={(categorias) => categorias.nome}
                             getOptionValue={(categorias) => categorias.id}
                         />
@@ -140,17 +155,16 @@ function EventCreator(props){
                         <input type="checkbox"
                             className="form-control"
                             id="ativo"
-                            value={state.ativo}
-                            onChange={handleChange}
+                            onChange={handleAtivo}
                         />
                     </div>
-                        <button
-                            type="submit"
-                            className="btn-send"
-                            onClick={handleSubmitClick}
-                        >
-                            Registrar evento
-                        </button>
+                    <button
+                        type="submit"
+                        className="btn-send"
+                        onClick={handleSubmitClick}
+                    >
+                        Registrar evento
+                    </button>
                 </form>
             </div>
         )
@@ -162,7 +176,7 @@ function EventCreator(props){
         )
     }
 
-    
+
 }
 
 export default EventCreator

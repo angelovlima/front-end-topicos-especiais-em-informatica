@@ -5,7 +5,7 @@ import { LoginContext } from '../../context/LoginContext';
 
 function RegistrationForm() {
 
-    const { loginFeito, changeAdmin } = useContext(LoginContext)
+    const { loginFeito, changeAdmin, defineToken } = useContext(LoginContext)
     const [isAdmin, setIsAdmin] = useState(false)
     const [loginCount, setLoginCount]  = useState(0)
     const [state, setState] = useState({
@@ -13,7 +13,7 @@ function RegistrationForm() {
         senha: ""
     })
 
-    const [redirection, setRedirection] = useState(false)
+    const [redirection, setRedirection] = useState(false);
     
     const handleChange = (e) => {
         const { id, value } = e.target
@@ -47,10 +47,12 @@ function RegistrationForm() {
                             setIsAdmin(true)
                             loginFeito();
                             changeAdmin();
+                            defineToken(response.data['token'])
                             setRedirection(true)
                         } else {
                             alert(`Bem vindo ${state.nome} \nRole: User`)
                             loginFeito()
+                            defineToken(response.data['token'])
                             setRedirection(true)
                         }
                         
